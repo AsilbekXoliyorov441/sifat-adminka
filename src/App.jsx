@@ -1,1564 +1,1252 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 export default function App() {
-  const AUDIO_BASE = "https://everyayah.com/data/Alafasy_128kbps";
+  // ==============================
+  // SUPABASE CONFIG
+  // ==============================
+  const SUPABASE_URL = "https://nxeslykjvylasmrvmyvn.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54ZXNseWtqdnlsYXNtcnZteXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NzY1MTUsImV4cCI6MjA5MjQ1MjUxNX0.eIecuWAJmOsFwdzVCiNHf-0VKkibl0QyCaVHMBkp7tA";
 
-  const verses = useMemo(
-    () => [
-      {
-        number: 1,
-        arabic:
-          "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ",
-        translit:
-          "Tabaarakallazii biyadihil mulku wa huwa 'alaa kulli shay'in qadiir.",
-        meaning:
-          "Barcha mulk qo‘lida bo‘lgan Zot barakotlidir. U har narsaga qodirdir.",
-      },
-      {
-        number: 2,
-        arabic:
-          "الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ الْعَزِيزُ الْغَفُورُ",
-        translit:
-          "Allazii khalaqal mawta wal hayaata liyabluwakum ayyukum ahsanu 'amalaa; wa huwal 'aziizul ghafuur.",
-        meaning:
-          "U zot o‘lim va hayotni yaratdi — sizlarni sinash uchun, kimning amali chiroyliroq ekanini bilish uchun. U qudratli va kechiruvchidir.",
-      },
-      {
-        number: 3,
-        arabic:
-          "الَّذِي خَلَقَ سَبْعَ سَمَاوَاتٍ طِبَاقًا ۖ مَا تَرَىٰ فِي خَلْقِ الرَّحْمَٰنِ مِن تَفَاوُتٍ ۖ فَارْجِعِ الْبَصَرَ هَلْ تَرَىٰ مِن فُطُورٍ",
-        translit:
-          "Allazii khalaqa sab'a samaawaatin tibaaqaa; maa taraa fii khalqir Rahmaani min tafaawut. Farji'il basara hal taraa min futuur.",
-        meaning:
-          "U zot yetti osmonni qat-qat qilib yaratdi. Rahmonning yaratishida hech bir nomutanosiblik ko‘rmaysan. Yana boqchi, biror yoriq yoki nuqson ko‘rasanmi?",
-      },
-      {
-        number: 4,
-        arabic:
-          "ثُمَّ ارْجِعِ الْبَصَرَ كَرَّتَيْنِ يَنقَلِبْ إِلَيْكَ الْبَصَرُ خَاسِئًا وَهُوَ حَسِيرٌ",
-        translit:
-          "Summarji'il basara karratayni yanqalib ilaykal basaru khaasi'an wa huwa hasiir.",
-        meaning:
-          "So‘ng yana qayta-qayta boq. Ko‘zing senga xor va charchagan holda qaytadi.",
-      },
-      {
-        number: 5,
-        arabic:
-          "وَلَقَدْ زَيَّنَّا السَّمَاءَ الدُّنْيَا بِمَصَابِيحَ وَجَعَلْنَاهَا رُجُومًا لِّلشَّيَاطِينِ ۖ وَأَعْتَدْنَا لَهُمْ عَذَابَ السَّعِيرِ",
-        translit:
-          "Wa laqad zayyannas samaa'ad dunyaa bimaSaabiih; wa ja'alnaahaa rujuuman lish shayaatiin; wa a'tadnaa lahum 'azaabas sa'iir.",
-        meaning:
-          "Biz yaqin osmonni yulduzlar bilan bezadik, ularni shaytonlarga qarshi otiladigan vosita qildik va ular uchun alangali azobni tayyorladik.",
-      },
-      {
-        number: 6,
-        arabic:
-          "وَلِلَّذِينَ كَفَرُوا بِرَبِّهِمْ عَذَابُ جَهَنَّمَ ۖ وَبِئْسَ الْمَصِيرُ",
-        translit:
-          "Wa lillaziina kafaruu birabbihim 'azaabu jahannam; wa bi'sal masiir.",
-        meaning:
-          "Parvardigoriga kofir bo‘lganlar uchun jahannam azobi bordir. U naqadar yomon manzildir.",
-      },
-      {
-        number: 7,
-        arabic: "إِذَا أُلْقُوا فِيهَا سَمِعُوا لَهَا شَهِيقًا وَهِيَ تَفُورُ",
-        translit: "Izaa ulquu fiihaa sami'uu lahaa shahiiqan wa hiya tafuur.",
-        meaning:
-          "U yerga tashlanganlarida, uning dahshatli uvillagan ovozini eshitadilar. U qaynab-toshib turadi.",
-      },
-      {
-        number: 8,
-        arabic:
-          "تَكَادُ تَمَيَّزُ مِنَ الْغَيْظِ ۖ كُلَّمَا أُلْقِيَ فِيهَا فَوْجٌ سَأَلَهُمْ خَزَنَتُهَا أَلَمْ يَأْتِكُمْ نَذِيرٌ",
-        translit:
-          "Takaadu tamayyazu minal ghayz; kullamaa ulqiya fiihaa fawjun sa'alahum khazanatuhaa alam ya'tikum naziir.",
-        meaning:
-          "U g‘azabidan yorilay deydi. Har safar unga bir to‘da tashlansa, qo‘riqchilari: “Sizlarga ogohlantiruvchi kelmaganmi?” deydilar.",
-      },
-      {
-        number: 9,
-        arabic:
-          "قَالُوا بَلَىٰ قَدْ جَاءَنَا نَذِيرٌ فَكَذَّبْنَا وَقُلْنَا مَا نَزَّلَ اللَّهُ مِن شَيْءٍ إِنْ أَنتُمْ إِلَّا فِي ضَلَالٍ كَبِيرٍ",
-        translit:
-          "Qaaluu balaa qad jaa'anaa naziirun fakazzabnaa wa qulnaa maa nazzalallaahu min shay'; in antum illaa fii dalaalin kabiir.",
-        meaning:
-          "Ular aytadilar: “Ha, bizga ogohlantiruvchi kelgan edi. Lekin biz uni yolg‘onga chiqardik va: ‘Alloh hech narsa nozil qilmagan, sizlar faqat katta adashuvdasizlar’, dedik.”",
-      },
-      {
-        number: 10,
-        arabic:
-          "وَقَالُوا لَوْ كُنَّا نَسْمَعُ أَوْ نَعْقِلُ مَا كُنَّا فِي أَصْحَابِ السَّعِيرِ",
-        translit:
-          "Wa qaaluu law kunnaa nasma'u aw na'qilu maa kunnaa fii ashaabis sa'iir.",
-        meaning:
-          "Ular yana aytadilar: “Agar eshitganimizda yoki aql yuritganimizda, biz bu do‘zax ahli orasida bo‘lmas edik.”",
-      },
-      {
-        number: 11,
-        arabic: "فَاعْتَرَفُوا بِذَنبِهِمْ فَسُحْقًا لِّأَصْحَابِ السَّعِيرِ",
-        translit: "Fa'tarafuu bizambihim fa suhqan li ashaabis sa'iir.",
-        meaning:
-          "Shunday qilib, ular gunohlarini tan oladilar. Endi alangali do‘zax ahliga halokat bo‘lsin.",
-      },
-      {
-        number: 12,
-        arabic:
-          "إِنَّ الَّذِينَ يَخْشَوْنَ رَبَّهُم بِالْغَيْبِ لَهُم مَّغْفِرَةٌ وَأَجْرٌ كَبِيرٌ",
-        translit:
-          "Innal laziina yakhshawna rabbahum bil ghaybi lahum maghfiratun wa ajrun kabiir.",
-        meaning:
-          "Albatta, Parvardigoridan ko‘rmay turib qo‘rqadiganlar uchun mag‘firat va ulkan mukofot bor.",
-      },
-      {
-        number: 13,
-        arabic:
-          "وَأَسِرُّوا قَوْلَكُمْ أَوِ اجْهَرُوا بِهِ ۖ إِنَّهُ عَلِيمٌ بِذَاتِ الصُّدُورِ",
-        translit:
-          "Wa asirruu qawlakum awijharuu bih; innahuu 'aliimun bizaatis suduur.",
-        meaning:
-          "So‘zingizni yashiring yoki oshkora ayting — albatta, U qalblardagi narsalarni ham biluvchidir.",
-      },
-      {
-        number: 14,
-        arabic: "أَلَا يَعْلَمُ مَنْ خَلَقَ وَهُوَ اللَّطِيفُ الْخَبِيرُ",
-        translit: "Alaa ya'lamu man khalaq; wa huwal Latiiful Khabiir.",
-        meaning:
-          "Axir yaratgan Zot bilmaydimi? U nozik biluvchi va har narsadan xabardordir.",
-      },
-      {
-        number: 15,
-        arabic:
-          "هُوَ الَّذِي جَعَلَ لَكُمُ الْأَرْضَ ذَلُولًا فَامْشُوا فِي مَنَاكِبِهَا وَكُلُوا مِن رِّزْقِهِ ۖ وَإِلَيْهِ النُّشُورُ",
-        translit:
-          "Huwal lazii ja'ala lakumul arda zaluulan famshuu fii manaakibihaa wa kuluu mir rizqih; wa ilayhin nushuur.",
-        meaning:
-          "U zot sizlar uchun yerni bo‘ysundirilgan qildi. Bas, uning tomonlarida yuringlar va Allohning rizqidan yenglar. Qayta tirilish ham faqat Uning huzurigadir.",
-      },
-      {
-        number: 16,
-        arabic:
-          "أَأَمِنتُم مَّن فِي السَّمَاءِ أَن يَخْسِفَ بِكُمُ الْأَرْضَ فَإِذَا هِيَ تَمُورُ",
-        translit:
-          "A amintum man fis samaa'i ay yakhsifa bikumul arda fa izaa hiya tamuur.",
-        meaning:
-          "Osmondagi Zot sizlarni yerga yuttirib yuborishidan xotirmisiz? Shunda yer qattiq silkinib ketadi.",
-      },
-      {
-        number: 17,
-        arabic:
-          "أَمْ أَمِنتُم مَّن فِي السَّمَاءِ أَن يُرْسِلَ عَلَيْكُمْ حَاصِبًا ۖ فَسَتَعْلَمُونَ كَيْفَ نَذِيرِ",
-        translit:
-          "Am amintum man fis samaa'i ay yursila 'alaykum haasiban fasata'lamuuna kayfa naziir.",
-        meaning:
-          "Yoki osmondagi Zot ustingizga tosh yog‘diruvchi ofat yuborishidan xotirmisiz? Bas, ogohlantirishim qanday bo‘lishini bilib olasizlar.",
-      },
-      {
-        number: 18,
-        arabic:
-          "وَلَقَدْ كَذَّبَ الَّذِينَ مِن قَبْلِهِمْ فَكَيْفَ كَانَ نَكِيرِ",
-        translit:
-          "Wa laqad kazzabal laziina min qablihim fakayfa kaana nakiir.",
-        meaning:
-          "Ulardan oldingilar ham yolg‘onga chiqargan edilar. Mening inkor etishimning oqibati qanday bo‘lganini ko‘ring.",
-      },
-      {
-        number: 19,
-        arabic:
-          "أَوَلَمْ يَرَوْا إِلَى الطَّيْرِ فَوْقَهُمْ صَافَّاتٍ وَيَقْبِضْنَ ۚ مَا يُمْسِكُهُنَّ إِلَّا الرَّحْمَٰنُ ۚ إِنَّهُ بِكُلِّ شَيْءٍ بَصِيرٌ",
-        translit:
-          "Awalam yaraw ilat tayri fawqahum saaffaatin wa yaqbidn; maa yumsikuhunna illar Rahmaan; innahuu bikulli shay'in basiir.",
-        meaning:
-          "Ular ustilarida qanot yozib va yig‘ib uchayotgan qushlarga qaramaydilarmi? Ularni faqat Rahmon ushlab turadi. Albatta, U har narsani ko‘ruvchidir.",
-      },
-      {
-        number: 20,
-        arabic:
-          "أَمَّنْ هَٰذَا الَّذِي هُوَ جُندٌ لَّكُمْ يَنصُرُكُم مِّن دُونِ الرَّحْمَٰنِ ۚ إِنِ الْكَافِرُونَ إِلَّا فِي غُرُورٍ",
-        translit:
-          "Amman haazal lazii huwa jundul lakum yansurukum min duunir Rahmaan; inil kaafiruuna illaa fii ghuruur.",
-        meaning:
-          "Rahmondan boshqa sizlarga yordam beradigan qanday qo‘shin bor? Kofirlar faqat aldanish ichidadirlar.",
-      },
-      {
-        number: 21,
-        arabic:
-          "أَمَّنْ هَٰذَا الَّذِي يَرْزُقُكُمْ إِنْ أَمْسَكَ رِزْقَهُ ۚ بَل لَّجُّوا فِي عُتُوٍّ وَنُفُورٍ",
-        translit:
-          "Amman haazal lazii yarzuqukum in amsaka rizqah; bal lajjuu fii 'utuw wiw nufuur.",
-        meaning:
-          "Agar U rizqini to‘xtatsa, sizlarga kim rizq beradi? Yo‘q, ular haddan oshish va qochishda davom etdilar.",
-      },
-      {
-        number: 22,
-        arabic:
-          "أَفَمَن يَمْشِي مُكِبًّا عَلَىٰ وَجْهِهِ أَهْدَىٰ أَمَّن يَمْشِي سَوِيًّا عَلَىٰ صِرَاطٍ مُّسْتَقِيمٍ",
-        translit:
-          "Afam yamshii mukibban 'alaa wajhihii ahdaa ammay yamshii sawiyyan 'alaa siraatim mustaqiim.",
-        meaning:
-          "Yuzi bilan yiqilib-sudralib yurgan odam to‘g‘ri yo‘ldami yoki tik va to‘g‘ri yo‘lda yurgan odammi?",
-      },
-      {
-        number: 23,
-        arabic:
-          "قُلْ هُوَ الَّذِي أَنشَأَكُمْ وَجَعَلَ لَكُمُ السَّمْعَ وَالْأَبْصَارَ وَالْأَفْئِدَةَ ۖ قَلِيلًا مَّا تَشْكُرُونَ",
-        translit:
-          "Qul huwal lazii ansha'akum wa ja'ala lakumus sam'a wal absaara wal af'idah; qaliilam maa tashkuruun.",
-        meaning:
-          "Ayting: U sizlarni paydo qildi va sizlarga quloq, ko‘zlar va qalblar berdi. Sizlar esa juda oz shukr qilasizlar.",
-      },
-      {
-        number: 24,
-        arabic:
-          "قُلْ هُوَ الَّذِي ذَرَأَكُمْ فِي الْأَرْضِ وَإِلَيْهِ تُحْشَرُونَ",
-        translit: "Qul huwal lazii zara'akum fil ardi wa ilayhi tuhsharuun.",
-        meaning:
-          "Ayting: U sizlarni yer yuziga tarqatdi va sizlar Uning huzuriga jam qilinasizlar.",
-      },
-      {
-        number: 25,
-        arabic: "وَيَقُولُونَ مَتَىٰ هَٰذَا الْوَعْدُ إِن كُنتُمْ صَادِقِينَ",
-        translit: "Wa yaquuluuna mataa haazal wa'du in kuntum saadiqiin.",
-        meaning:
-          "Ular: “Agar rostgo‘y bo‘lsangizlar, bu va’da qachon bo‘ladi?” deydilar.",
-      },
-      {
-        number: 26,
-        arabic:
-          "قُلْ إِنَّمَا الْعِلْمُ عِندَ اللَّهِ وَإِنَّمَا أَنَا نَذِيرٌ مُّبِينٌ",
-        translit:
-          "Qul innamal 'ilmu 'indallaah wa innamaa ana naziirum mubiin.",
-        meaning:
-          "Ayting: “Ilm faqat Allohning huzuridadir. Men esa faqat aniq ogohlantiruvchiman.”",
-      },
-      {
-        number: 27,
-        arabic:
-          "فَلَمَّا رَأَوْهُ زُلْفَةً سِيئَتْ وُجُوهُ الَّذِينَ كَفَرُوا وَقِيلَ هَٰذَا الَّذِي كُنتُم بِهِ تَدَّعُونَ",
-        translit:
-          "Falammaa ra'awhu zulfatan sii'at wujuuhul laziina kafaruu wa qiila haazal lazii kuntum bihii tadda'uun.",
-        meaning:
-          "Qachonki uni yaqin holda ko‘rishsa, kofirlarning yuzlari qorayib ketadi va ularga: “Mana shu sizlar talab qilib yurgan narsa”, deyiladi.",
-      },
-      {
-        number: 28,
-        arabic:
-          "قُلْ أَرَأَيْتُمْ إِنْ أَهْلَكَنِيَ اللَّهُ وَمَن مَّعِيَ أَوْ رَحِمَنَا فَمَن يُجِيرُ الْكَافِرِينَ مِنْ عَذَابٍ أَلِيمٍ",
-        translit:
-          "Qul ara'aytum in ahlakaniyallaahu wa man ma'iya aw rahimanaa faman yujiirul kaafiriina min 'azaabin aliim.",
-        meaning:
-          "Ayting: “Agar Alloh meni va men bilan birga bo‘lganlarni halok qilsa yoki bizga rahm qilsa ham, kofirlarni alamli azobdan kim qutqaradi?”",
-      },
-      {
-        number: 29,
-        arabic:
-          "قُلْ هُوَ الرَّحْمَٰنُ آمَنَّا بِهِ وَعَلَيْهِ تَوَكَّلْنَا ۖ فَسَتَعْلَمُونَ مَنْ هُوَ فِي ضَلَالٍ مُّبِينٍ",
-        translit:
-          "Qul huwar Rahmaanu aamannaa bihii wa 'alayhi tawakkalnaa; fasata'lamuuna man huwa fii dalaalim mubiin.",
-        meaning:
-          "Ayting: “U Rahmondir. Biz Unga iymon keltirdik va Ungagina tavakkal qildik. Kim ochiq adashuvda ekanini tez orada bilasizlar.”",
-      },
-      {
-        number: 30,
-        arabic:
-          "قُلْ أَرَأَيْتُمْ إِنْ أَصْبَحَ مَاؤُكُمْ غَوْرًا فَمَن يَأْتِيكُم بِمَاءٍ مَّعِينٍ",
-        translit:
-          "Qul ara'aytum in asbaha maa'ukum ghawran famay ya'tiikum bimaa'im ma'iin.",
-        meaning:
-          "Ayting: “Agar suvingiz yer qa’riga singib ketsa, sizlarga oqar suvni kim keltira oladi?”",
-      },
-    ],
+  // ==============================
+  // COMMON HEADERS
+  // ==============================
+  const headers = useMemo(
+    () => ({
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    }),
     [],
   );
 
-  const audioRef = useRef(null);
-  const micAudioRef = useRef(null);
-  const verseRefs = useRef({});
-  const repeatCounterRef = useRef(0);
-  const mediaRecorderRef = useRef(null);
-  const mediaStreamRef = useRef(null);
-  const recognitionRef = useRef(null);
-  const chunksRef = useRef([]);
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const animationRef = useRef(null);
+  // ==============================
+  // UI STATE
+  // ==============================
+  const [activeTab, setActiveTab] = useState("brands");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const [selectedVerse, setSelectedVerse] = useState(1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [search, setSearch] = useState("");
-  const [showMeaning, setShowMeaning] = useState(true);
-  const [showTranslit, setShowTranslit] = useState(true);
-  const [autoNext, setAutoNext] = useState(true);
-  const [repeatMode, setRepeatMode] = useState("off");
-  const [repeatCount, setRepeatCount] = useState(1);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [loadingVerse, setLoadingVerse] = useState(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [compactMode, setCompactMode] = useState(() => {
-    const saved = localStorage.getItem("mulk-compact-mode-v2");
-    return saved ? JSON.parse(saved) : false;
+  // ==============================
+  // DATA STATES
+  // ==============================
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  // ==============================
+  // EDITING STATES
+  // ==============================
+  const [editingBrandId, setEditingBrandId] = useState(null);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editingProductId, setEditingProductId] = useState(null);
+
+  // ==============================
+  // FORM STATES
+  // ==============================
+  const [brandForm, setBrandForm] = useState({
+    name: "",
+    slug: "",
+    image_url: "",
+    description: "",
+    is_active: true,
   });
-  const [bookmarks, setBookmarks] = useState(() => {
-    const saved = localStorage.getItem("mulk-bookmarks-v2");
-    return saved ? JSON.parse(saved) : [];
+
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    slug: "",
+    image_url: "",
+    description: "",
+    is_active: true,
   });
-  const [savedSettingsLoaded, setSavedSettingsLoaded] = useState(false);
-  const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
 
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordings, setRecordings] = useState(() => {
-    const saved = localStorage.getItem("mulk-recordings-meta-v1");
-    return saved ? JSON.parse(saved) : {};
+  const [productForm, setProductForm] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    price: "",
+    old_price: "",
+    stock: "",
+    image_url: "",
+    brand_id: "",
+    category_id: "",
+    is_active: true,
+    is_featured: false,
   });
-  const [speechSupported, setSpeechSupported] = useState(false);
-  const [speechLang, setSpeechLang] = useState("ar-SA");
-  const [speechResult, setSpeechResult] = useState("");
-  const [speechInterim, setSpeechInterim] = useState("");
-  const [speechStatus, setSpeechStatus] = useState("idle");
-  const [micLevel, setMicLevel] = useState(0);
-  const [shadowDelay, setShadowDelay] = useState(1200);
-  const [shadowModeArmed, setShadowModeArmed] = useState(false);
-  const [feedback, setFeedback] = useState(null);
 
-  const [practiceMode, setPracticeMode] = useState("arabic"); // arabic | translit
-  const [viewMode, setViewMode] = useState("all"); // all | practice | exam
-
-  const currentVerseData = verses.find((v) => v.number === selectedVerse);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("mulk-settings-v2");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setShowMeaning(parsed.showMeaning ?? true);
-      setShowTranslit(parsed.showTranslit ?? true);
-      setAutoNext(parsed.autoNext ?? true);
-      setRepeatMode(parsed.repeatMode ?? "off");
-      setRepeatCount(parsed.repeatCount ?? 1);
-      setPlaybackRate(parsed.playbackRate ?? 1);
-      setSpeechLang(parsed.speechLang ?? "ar-SA");
-      setShadowDelay(parsed.shadowDelay ?? 1200);
-      setPracticeMode(parsed.practiceMode ?? "arabic");
-      setViewMode(parsed.viewMode ?? "all");
-    }
-    setSavedSettingsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (!savedSettingsLoaded) return;
-    localStorage.setItem(
-      "mulk-settings-v2",
-      JSON.stringify({
-        showMeaning,
-        showTranslit,
-        autoNext,
-        repeatMode,
-        repeatCount,
-        playbackRate,
-        speechLang,
-        shadowDelay,
-        practiceMode,
-        viewMode,
-      }),
-    );
-  }, [
-    showMeaning,
-    showTranslit,
-    autoNext,
-    repeatMode,
-    repeatCount,
-    playbackRate,
-    speechLang,
-    shadowDelay,
-    practiceMode,
-    viewMode,
-    savedSettingsLoaded,
-  ]);
-
-  useEffect(() => {
-    localStorage.setItem("mulk-bookmarks-v2", JSON.stringify(bookmarks));
-  }, [bookmarks]);
-
-  useEffect(() => {
-    localStorage.setItem("mulk-compact-mode-v2", JSON.stringify(compactMode));
-  }, [compactMode]);
-
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    setSpeechSupported(Boolean(SpeechRecognition));
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = playbackRate;
-    }
-  }, [playbackRate]);
-
-  const getAudioUrl = (verseNumber) => {
-    const ayah = String(verseNumber).padStart(3, "0");
-    return `${AUDIO_BASE}/067${ayah}.mp3`;
+  // ==============================
+  // HELPERS
+  // ==============================
+  const resetAlerts = () => {
+    setMessage("");
+    setError("");
   };
 
-  const normalizeArabic = (text = "") =>
-    text
+  const toSlug = (value) => {
+    return value
       .toLowerCase()
-      .replace(/[ًٌٍَُِّْـ]/g, "")
-      .replace(/[ۖۚۗۙۘ]/g, "")
-      .replace(/[،؛؟.,!]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-  const normalizeLatin = (text = "") =>
-    text
-      .toLowerCase()
-      .replace(/['‘’`]/g, "")
-      .replace(/[-.,;:!?()]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-  const levenshtein = (a = "", b = "") => {
-    const matrix = Array.from({ length: b.length + 1 }, () => []);
-    for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
-    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-    for (let i = 1; i <= b.length; i++) {
-      for (let j = 1; j <= a.length; j++) {
-        if (b.charAt(i - 1) === a.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1,
-          );
-        }
-      }
-    }
-    return matrix[b.length][a.length];
+      .trim()
+      .replace(/['"]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-_.а-яўқғҳөё\s]/gi, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
   };
 
-  const similarity = (a = "", b = "") => {
-    if (!a && !b) return 100;
-    const distance = levenshtein(a, b);
-    const maxLen = Math.max(a.length, b.length) || 1;
-    return Math.max(0, Math.round((1 - distance / maxLen) * 100));
+  const showSuccess = (text) => {
+    setMessage(text);
+    setError("");
   };
 
-  const compareWordLists = (targetText, spokenText) => {
-    const targetWords = targetText.split(" ").filter(Boolean);
-    const spokenWords = spokenText.split(" ").filter(Boolean);
-
-    const missing = targetWords.filter((word) => !spokenWords.includes(word));
-    const extra = spokenWords.filter((word) => !targetWords.includes(word));
-    const matched = targetWords.filter((word) => spokenWords.includes(word));
-
-    return {
-      targetWords,
-      spokenWords,
-      missing,
-      extra,
-      matched,
-    };
+  const showError = (text) => {
+    setError(text);
+    setMessage("");
   };
 
-  const buildPronunciationTips = (verse) => {
-    const tips = [];
-    if (!verse) return tips;
-
-    if (verse.translit.includes("gh")) {
-      tips.push("“gh” tovushi tomoqdan chiqadi, odatiy “g” kabi aytmang.");
-    }
-    if (verse.translit.includes("kh")) {
-      tips.push("“kh” tovushini chuqurroq, tomoqdan chiqaring.");
-    }
-    if (verse.translit.includes("q")) {
-      tips.push("“q” ni oddiy “k” emas, chuqurroq talaffuz qiling.");
-    }
-    if (verse.translit.includes("aa")) {
-      tips.push("Cho‘ziq unlilarni shoshmay, biroz cho‘zib ayting.");
-    }
-    if (verse.arabic.includes("الل")) {
-      tips.push("“Alloh” lafzini aniq va sokin aytishga harakat qiling.");
-    }
-    if (tips.length === 0) {
-      tips.push("Talaffuzni tekis, sokin va oyatni bo‘lib-bo‘lib ayting.");
-    }
-    return tips;
+  const getBrandName = (brandId) => {
+    const found = brands.find((b) => b.id === brandId);
+    return found ? found.name : "Topilmadi";
   };
 
-  const evaluateSpeech = (recognizedText, verse) => {
-    if (!verse) return null;
-
-    const target =
-      practiceMode === "arabic"
-        ? normalizeArabic(verse.arabic)
-        : normalizeLatin(verse.translit);
-
-    const spoken =
-      practiceMode === "arabic"
-        ? normalizeArabic(recognizedText)
-        : normalizeLatin(recognizedText);
-
-    const score = similarity(target, spoken);
-    const words = compareWordLists(target, spoken);
-
-    let level = "Qayta mashq qiling";
-    if (score >= 90) level = "Juda yaxshi";
-    else if (score >= 75) level = "Yaxshi";
-    else if (score >= 55) level = "O‘rtacha";
-
-    return {
-      score,
-      level,
-      target,
-      spoken,
-      ...words,
-      tips: buildPronunciationTips(verse),
-    };
+  const getCategoryName = (categoryId) => {
+    const found = categories.find((c) => c.id === categoryId);
+    return found ? found.name : "Topilmadi";
   };
 
-  const filteredVerses = verses.filter((item) => {
-    const q = search.trim().toLowerCase();
-    const matchesSearch =
-      !q ||
-      item.number.toString().includes(q) ||
-      item.arabic.toLowerCase().includes(q) ||
-      item.translit.toLowerCase().includes(q) ||
-      item.meaning.toLowerCase().includes(q);
-
-    const matchesBookmark =
-      !showOnlyBookmarks || bookmarks.includes(item.number);
-    return matchesSearch && matchesBookmark;
-  });
-
-  const scrollToVerse = (verseNumber) => {
-    const target = verseRefs.current[verseNumber];
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
-  const playVerse = async (verseNumber, resetRepeat = true) => {
+  // ==============================
+  // FETCH FUNCTIONS
+  // ==============================
+  const fetchBrands = async () => {
     try {
-      setSelectedVerse(verseNumber);
-      setLoadingVerse(verseNumber);
-      setFeedback(null);
-      setSpeechResult("");
-      setSpeechInterim("");
-
-      if (resetRepeat) repeatCounterRef.current = 0;
-
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      audio.src = getAudioUrl(verseNumber);
-      audio.load();
-      await audio.play();
-
-      scrollToVerse(verseNumber);
-      setIsPlaying(true);
-    } catch (error) {
-      console.error(error);
-      setIsPlaying(false);
-      alert("Audio yuklanmadi. Internet yoki audio manbani tekshirib ko‘ring.");
-    } finally {
-      setLoadingVerse(null);
-    }
-  };
-
-  const pauseAudio = () => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    setIsPlaying(false);
-  };
-
-  const resumeAudio = async () => {
-    try {
-      if (!audioRef.current) return;
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const nextVerse = () => {
-    if (selectedVerse < verses.length) playVerse(selectedVerse + 1);
-    else if (repeatMode === "all") playVerse(1);
-  };
-
-  const prevVerse = () => {
-    if (selectedVerse > 1) playVerse(selectedVerse - 1);
-  };
-
-  const toggleBookmark = (verseNumber) => {
-    setBookmarks((prev) =>
-      prev.includes(verseNumber)
-        ? prev.filter((n) => n !== verseNumber)
-        : [...prev, verseNumber].sort((a, b) => a - b),
-    );
-  };
-
-  const jumpToBookmark = (verseNumber) => {
-    setSelectedVerse(verseNumber);
-    scrollToVerse(verseNumber);
-  };
-
-  const formatTime = (sec) => {
-    if (!sec || Number.isNaN(sec)) return "0:00";
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  };
-
-  const progress = duration ? (currentTime / duration) * 100 : 0;
-
-  const cleanupMicVisual = () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    animationRef.current = null;
-    setMicLevel(0);
-  };
-
-  const stopMediaStream = () => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
-    }
-    analyserRef.current = null;
-    cleanupMicVisual();
-  };
-
-  const setupMicLevelMeter = async (stream) => {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-
-    const audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = new AnalyserNode(audioContext, { fftSize: 256 });
-
-    source.connect(analyser);
-
-    audioContextRef.current = audioContext;
-    analyserRef.current = analyser;
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    const tick = () => {
-      if (!analyserRef.current) return;
-      analyserRef.current.getByteFrequencyData(dataArray);
-      const avg =
-        dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length || 0;
-      setMicLevel(Math.min(100, Math.round((avg / 255) * 100)));
-      animationRef.current = requestAnimationFrame(tick);
-    };
-
-    tick();
-  };
-
-  const startRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return null;
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = speechLang;
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => setSpeechStatus("listening");
-    recognition.onerror = () => setSpeechStatus("error");
-    recognition.onend = () => {
-      setSpeechStatus((prev) => (prev === "processing" ? "done" : prev));
-    };
-
-    recognition.onresult = (event) => {
-      let interim = "";
-      let finalText = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0]?.transcript || "";
-        if (event.results[i].isFinal) finalText += transcript + " ";
-        else interim += transcript + " ";
-      }
-
-      if (interim.trim()) setSpeechInterim(interim.trim());
-      if (finalText.trim()) {
-        setSpeechResult((prev) => `${prev} ${finalText}`.trim());
-      }
-    };
-
-    recognition.start();
-    recognitionRef.current = recognition;
-    return recognition;
-  };
-
-  const stopRecognition = () => {
-    try {
-      if (recognitionRef.current) {
-        setSpeechStatus("processing");
-        recognitionRef.current.stop();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      setFeedback(null);
-      setSpeechResult("");
-      setSpeechInterim("");
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-
-      await setupMicLevelMeter(stream);
-
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : "";
-      const mediaRecorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : {},
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/brands?select=*&order=created_at.desc`,
+        {
+          method: "GET",
+          headers,
+        },
       );
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
-      };
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Brandlarni olishda xatolik");
+      }
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, {
-          type: mimeType || "audio/webm",
-        });
-        const url = URL.createObjectURL(blob);
-
-        setRecordings((prev) => ({
-          ...prev,
-          [selectedVerse]: {
-            url,
-            createdAt: Date.now(),
-          },
-        }));
-
-        const finalText = `${speechResult} ${speechInterim}`.trim();
-        if (finalText) {
-          const result = evaluateSpeech(finalText, currentVerseData);
-          setFeedback(result);
-        } else {
-          setFeedback({
-            score: 0,
-            level: "Matn aniqlanmadi",
-            target:
-              practiceMode === "arabic"
-                ? normalizeArabic(currentVerseData?.arabic || "")
-                : normalizeLatin(currentVerseData?.translit || ""),
-            spoken: "",
-            missing: [],
-            extra: [],
-            matched: [],
-            tips: [
-              "Mikrofonga yaqinroq gapiring.",
-              "Sekin va aniq talaffuz qiling.",
-              "Brauzeringizda speech recognition ishlamasligi ham mumkin.",
-            ],
-          });
-        }
-
-        stopMediaStream();
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-
-      if (speechSupported) startRecognition();
-      else setSpeechStatus("unsupported");
-    } catch (error) {
-      console.error(error);
-      alert("Mikrofon ruxsati berilmadi yoki recording boshlanmadi.");
+      const data = await res.json();
+      setBrands(data || []);
+    } catch (err) {
+      showError(`Brands fetch error: ${err.message}`);
     }
   };
 
-  const stopRecording = () => {
+  const fetchCategories = async () => {
     try {
-      if (
-        mediaRecorderRef.current &&
-        mediaRecorderRef.current.state !== "inactive"
-      ) {
-        mediaRecorderRef.current.stop();
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/categories?select=*&order=created_at.desc`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Categorylarni olishda xatolik");
       }
-      stopRecognition();
-      setIsRecording(false);
-    } catch (error) {
-      console.error(error);
-      setIsRecording(false);
-      stopMediaStream();
+
+      const data = await res.json();
+      setCategories(data || []);
+    } catch (err) {
+      showError(`Categories fetch error: ${err.message}`);
     }
   };
 
-  const startShadowPractice = async () => {
-    setShadowModeArmed(true);
-    await playVerse(selectedVerse);
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/products?select=*&order=created_at.desc`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Productlarni olishda xatolik");
+      }
+
+      const data = await res.json();
+      setProducts(data || []);
+    } catch (err) {
+      showError(`Products fetch error: ${err.message}`);
+    }
   };
 
-  const clearRecording = (verseNumber) => {
-    setRecordings((prev) => {
-      const copy = { ...prev };
-      if (copy[verseNumber]?.url) URL.revokeObjectURL(copy[verseNumber].url);
-      delete copy[verseNumber];
-      return copy;
-    });
-  };
-
-  const getExamHidden = (type) => {
-    if (viewMode !== "exam") return false;
-    if (type === "arabic") return true;
-    if (type === "translit") return true;
-    if (type === "meaning") return true;
-    return false;
+  const fetchAllData = async () => {
+    setLoading(true);
+    resetAlerts();
+    try {
+      await Promise.all([fetchBrands(), fetchCategories(), fetchProducts()]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    const onLoadedMetadata = () => setDuration(audio.duration || 0);
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime || 0);
-
-    const onEnded = async () => {
-      setIsPlaying(false);
-
-      if (shadowModeArmed) {
-        setShadowModeArmed(false);
-        setTimeout(() => {
-          startRecording();
-        }, shadowDelay);
-        return;
-      }
-
-      if (repeatMode === "one") {
-        if (repeatCounterRef.current < repeatCount - 1) {
-          repeatCounterRef.current += 1;
-          await playVerse(selectedVerse, false);
-          return;
-        } else {
-          repeatCounterRef.current = 0;
-          if (autoNext) {
-            if (selectedVerse < verses.length)
-              await playVerse(selectedVerse + 1);
-            else if (repeatMode === "all") await playVerse(1);
-          }
-          return;
-        }
-      }
-
-      if (autoNext) {
-        if (selectedVerse < verses.length) await playVerse(selectedVerse + 1);
-        else if (repeatMode === "all") await playVerse(1);
-      }
-    };
-
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("ended", onEnded);
-
-    return () => {
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("ended", onEnded);
-    };
-  }, [
-    selectedVerse,
-    autoNext,
-    repeatMode,
-    repeatCount,
-    shadowModeArmed,
-    shadowDelay,
-    verses.length,
-  ]);
-
-  useEffect(() => {
-    return () => {
-      stopMediaStream();
-      try {
-        if (recognitionRef.current) recognitionRef.current.stop();
-      } catch {}
-    };
+    fetchAllData();
   }, []);
 
-  const feedbackColor = !feedback?.score
-    ? "text-slate-300"
-    : feedback.score >= 90
-      ? "text-emerald-300"
-      : feedback.score >= 75
-        ? "text-sky-300"
-        : feedback.score >= 55
-          ? "text-amber-300"
-          : "text-red-300";
+  // ==============================
+  // BRAND CRUD
+  // ==============================
+  const handleBrandChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setBrandForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
+  const handleBrandNameAutoSlug = (e) => {
+    const value = e.target.value;
+    setBrandForm((prev) => ({
+      ...prev,
+      name: value,
+      slug: editingBrandId ? prev.slug : toSlug(value),
+    }));
+  };
+
+  const resetBrandForm = () => {
+    setBrandForm({
+      name: "",
+      slug: "",
+      image_url: "",
+      description: "",
+      is_active: true,
+    });
+    setEditingBrandId(null);
+  };
+
+  const submitBrand = async (e) => {
+    e.preventDefault();
+    resetAlerts();
+
+    if (!brandForm.name || !brandForm.slug) {
+      showError("Brand name va slug majburiy");
+      return;
+    }
+
+    try {
+      const url = editingBrandId
+        ? `${SUPABASE_URL}/rest/v1/brands?id=eq.${editingBrandId}`
+        : `${SUPABASE_URL}/rest/v1/brands`;
+
+      const method = editingBrandId ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify({
+          name: brandForm.name,
+          slug: brandForm.slug,
+          image_url: brandForm.image_url || null,
+          description: brandForm.description || null,
+          is_active: brandForm.is_active,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Brand saqlashda xatolik");
+      }
+
+      await fetchBrands();
+      resetBrandForm();
+      showSuccess(
+        editingBrandId ? "Brand yangilandi" : "Brand muvaffaqiyatli qo‘shildi",
+      );
+    } catch (err) {
+      showError(`Brand save error: ${err.message}`);
+    }
+  };
+
+  const editBrand = (item) => {
+    setEditingBrandId(item.id);
+    setBrandForm({
+      name: item.name || "",
+      slug: item.slug || "",
+      image_url: item.image_url || "",
+      description: item.description || "",
+      is_active: !!item.is_active,
+    });
+    setActiveTab("brands");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const deleteBrand = async (id) => {
+    const confirmDelete = window.confirm(
+      "Shu brandni o‘chirmoqchimisiz? Agar product bog‘langan bo‘lsa o‘chmasligi mumkin.",
+    );
+    if (!confirmDelete) return;
+
+    resetAlerts();
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/brands?id=eq.${id}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Brand o‘chirishda xatolik");
+      }
+
+      await fetchBrands();
+      showSuccess("Brand o‘chirildi");
+    } catch (err) {
+      showError(`Brand delete error: ${err.message}`);
+    }
+  };
+
+  // ==============================
+  // CATEGORY CRUD
+  // ==============================
+  const handleCategoryChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setCategoryForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCategoryNameAutoSlug = (e) => {
+    const value = e.target.value;
+    setCategoryForm((prev) => ({
+      ...prev,
+      name: value,
+      slug: editingCategoryId ? prev.slug : toSlug(value),
+    }));
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({
+      name: "",
+      slug: "",
+      image_url: "",
+      description: "",
+      is_active: true,
+    });
+    setEditingCategoryId(null);
+  };
+
+  const submitCategory = async (e) => {
+    e.preventDefault();
+    resetAlerts();
+
+    if (!categoryForm.name || !categoryForm.slug) {
+      showError("Category name va slug majburiy");
+      return;
+    }
+
+    try {
+      const url = editingCategoryId
+        ? `${SUPABASE_URL}/rest/v1/categories?id=eq.${editingCategoryId}`
+        : `${SUPABASE_URL}/rest/v1/categories`;
+
+      const method = editingCategoryId ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify({
+          name: categoryForm.name,
+          slug: categoryForm.slug,
+          image_url: categoryForm.image_url || null,
+          description: categoryForm.description || null,
+          is_active: categoryForm.is_active,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Category saqlashda xatolik");
+      }
+
+      await fetchCategories();
+      resetCategoryForm();
+      showSuccess(
+        editingCategoryId
+          ? "Category yangilandi"
+          : "Category muvaffaqiyatli qo‘shildi",
+      );
+    } catch (err) {
+      showError(`Category save error: ${err.message}`);
+    }
+  };
+
+  const editCategory = (item) => {
+    setEditingCategoryId(item.id);
+    setCategoryForm({
+      name: item.name || "",
+      slug: item.slug || "",
+      image_url: item.image_url || "",
+      description: item.description || "",
+      is_active: !!item.is_active,
+    });
+    setActiveTab("categories");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const deleteCategory = async (id) => {
+    const confirmDelete = window.confirm(
+      "Shu categoryni o‘chirmoqchimisiz? Agar product bog‘langan bo‘lsa o‘chmasligi mumkin.",
+    );
+    if (!confirmDelete) return;
+
+    resetAlerts();
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/categories?id=eq.${id}`,
+        {
+          method: "DELETE",
+          headers,
+        },
+      );
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Category o‘chirishda xatolik");
+      }
+
+      await fetchCategories();
+      showSuccess("Category o‘chirildi");
+    } catch (err) {
+      showError(`Category delete error: ${err.message}`);
+    }
+  };
+
+  // ==============================
+  // PRODUCT CRUD
+  // ==============================
+  const handleProductChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setProductForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleProductNameAutoSlug = (e) => {
+    const value = e.target.value;
+    setProductForm((prev) => ({
+      ...prev,
+      name: value,
+      slug: editingProductId ? prev.slug : toSlug(value),
+    }));
+  };
+
+  const resetProductForm = () => {
+    setProductForm({
+      name: "",
+      slug: "",
+      description: "",
+      price: "",
+      old_price: "",
+      stock: "",
+      image_url: "",
+      brand_id: "",
+      category_id: "",
+      is_active: true,
+      is_featured: false,
+    });
+    setEditingProductId(null);
+  };
+
+  const submitProduct = async (e) => {
+    e.preventDefault();
+    resetAlerts();
+
+    if (
+      !productForm.name ||
+      !productForm.slug ||
+      !productForm.price ||
+      !productForm.stock ||
+      !productForm.brand_id ||
+      !productForm.category_id
+    ) {
+      showError("Product name, slug, price, stock, brand va category majburiy");
+      return;
+    }
+
+    try {
+      const url = editingProductId
+        ? `${SUPABASE_URL}/rest/v1/products?id=eq.${editingProductId}`
+        : `${SUPABASE_URL}/rest/v1/products`;
+
+      const method = editingProductId ? "PATCH" : "POST";
+
+      const payload = {
+        name: productForm.name,
+        slug: productForm.slug,
+        description: productForm.description || null,
+        price: Number(productForm.price),
+        old_price:
+          productForm.old_price === "" ? null : Number(productForm.old_price),
+        stock: Number(productForm.stock),
+        image_url: productForm.image_url || null,
+        brand_id: productForm.brand_id,
+        category_id: productForm.category_id,
+        is_active: productForm.is_active,
+        is_featured: productForm.is_featured,
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Product saqlashda xatolik");
+      }
+
+      await fetchProducts();
+      resetProductForm();
+      showSuccess(
+        editingProductId
+          ? "Product yangilandi"
+          : "Product muvaffaqiyatli qo‘shildi",
+      );
+    } catch (err) {
+      showError(`Product save error: ${err.message}`);
+    }
+  };
+
+  const editProduct = (item) => {
+    setEditingProductId(item.id);
+    setProductForm({
+      name: item.name || "",
+      slug: item.slug || "",
+      description: item.description || "",
+      price: item.price ?? "",
+      old_price: item.old_price ?? "",
+      stock: item.stock ?? "",
+      image_url: item.image_url || "",
+      brand_id: item.brand_id || "",
+      category_id: item.category_id || "",
+      is_active: !!item.is_active,
+      is_featured: !!item.is_featured,
+    });
+    setActiveTab("products");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const deleteProduct = async (id) => {
+    const confirmDelete = window.confirm("Shu productni o‘chirmoqchimisiz?");
+    if (!confirmDelete) return;
+
+    resetAlerts();
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${id}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Product o‘chirishda xatolik");
+      }
+
+      await fetchProducts();
+      showSuccess("Product o‘chirildi");
+    } catch (err) {
+      showError(`Product delete error: ${err.message}`);
+    }
+  };
+
+  // ==============================
+  // RENDER
+  // ==============================
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#0f172a_0%,#020617_45%,#020617_100%)] text-white">
-      <audio ref={audioRef} preload="none" />
-      <audio ref={micAudioRef} preload="none" />
-
-      <div className="mx-auto max-w-7xl px-4 pb-40 pt-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl">
-          <div className="bg-gradient-to-br from-emerald-500/10 via-sky-500/10 to-fuchsia-500/10 p-4 sm:p-6 lg:p-8">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Pill>67-sura</Pill>
-              <Pill>30 oyat</Pill>
-              <Pill>Mishary Alafasy</Pill>
-              <Pill>
-                {speechSupported
-                  ? "Speech check mavjud"
-                  : "Speech check cheklangan"}
-              </Pill>
+    <div className="min-h-screen bg-slate-100 text-slate-800">
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* HEADER */}
+        <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Ecommerce Admin Panel
+              </h1>
+              <p className="mt-2 text-sm text-slate-500">
+                React + Tailwind + Supabase REST API + fetch
+              </p>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div>
-                <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-                  Mulk surasi premium practice
-                </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-                  Audio, takrorlash, yodlash, exam mode va mikrofonda aytib
-                  talaffuzni tekshirish — hammasi bitta sahifada.
-                </p>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <ActionButton onClick={() => playVerse(1)} variant="primary">
-                    1-oyatdan boshlash
-                  </ActionButton>
-                  <ActionButton onClick={prevVerse}>← Oldingi</ActionButton>
-                  {isPlaying ? (
-                    <ActionButton onClick={pauseAudio}>Pause</ActionButton>
-                  ) : (
-                    <ActionButton onClick={resumeAudio}>Continue</ActionButton>
-                  )}
-                  <ActionButton onClick={nextVerse}>Keyingi →</ActionButton>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  <ActionButton
-                    onClick={startShadowPractice}
-                    variant="secondary"
-                  >
-                    Listen → Keyin Record
-                  </ActionButton>
-                  {!isRecording ? (
-                    <ActionButton onClick={startRecording} variant="secondary">
-                      🎙 Record boshlash
-                    </ActionButton>
-                  ) : (
-                    <ActionButton onClick={stopRecording} variant="danger">
-                      ⏹ Record to‘xtatish
-                    </ActionButton>
-                  )}
-                  <ActionButton
-                    onClick={() => toggleBookmark(selectedVerse)}
-                    variant="secondary"
-                  >
-                    {bookmarks.includes(selectedVerse)
-                      ? "Bookmark olib tashlash"
-                      : "Bookmark"}
-                  </ActionButton>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Hozirgi oyat
-                </p>
-                <h2 className="mt-2 text-2xl font-black">
-                  {selectedVerse}-oyat
-                </h2>
-
-                {!getExamHidden("arabic") ? (
-                  <p
-                    className="mt-4 text-right text-2xl leading-[2.15] sm:text-3xl"
-                    dir="rtl"
-                  >
-                    {currentVerseData?.arabic}
-                  </p>
-                ) : (
-                  <div className="mt-4 rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-center text-slate-400">
-                    Exam mode: oyat yashirilgan
-                  </div>
-                )}
-
-                {showTranslit && !getExamHidden("translit") && (
-                  <p className="mt-4 text-sm leading-7 text-slate-300">
-                    {currentVerseData?.translit}
-                  </p>
-                )}
-
-                {showMeaning && !getExamHidden("meaning") && (
-                  <p className="mt-3 text-sm leading-7 text-slate-400">
-                    {currentVerseData?.meaning}
-                  </p>
-                )}
-
-                <button
-                  onClick={() => playVerse(selectedVerse)}
-                  className="mt-5 w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-3 text-sm font-black text-slate-950 transition hover:scale-[1.01]"
-                >
-                  {loadingVerse === selectedVerse
-                    ? "Yuklanmoqda..."
-                    : "🎧 Shu oyatni eshitish"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-              Qidirish
-            </label>
-            <input
-              type="text"
-              placeholder="Oyat raqami, arabcha, o‘qilishi yoki ma’nosi..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
-            />
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <ToggleCard
-                label="Ma’nosini ko‘rsatish"
-                checked={showMeaning}
-                onChange={setShowMeaning}
-              />
-              <ToggleCard
-                label="O‘qilishini ko‘rsatish"
-                checked={showTranslit}
-                onChange={setShowTranslit}
-              />
-              <ToggleCard
-                label="Auto next"
-                checked={autoNext}
-                onChange={setAutoNext}
-              />
-              <ToggleCard
-                label="Compact mode"
-                checked={compactMode}
-                onChange={setCompactMode}
-              />
-              <ToggleCard
-                label="Faqat bookmarklar"
-                checked={showOnlyBookmarks}
-                onChange={setShowOnlyBookmarks}
-              />
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <SelectBlock
-                label="Repeat mode"
-                value={repeatMode}
-                onChange={setRepeatMode}
-                options={[
-                  { label: "Off", value: "off" },
-                  { label: "One", value: "one" },
-                  { label: "All", value: "all" },
-                ]}
-              />
-
-              <SelectBlock
-                label="Repeat count"
-                value={repeatCount}
-                onChange={(v) => setRepeatCount(Number(v))}
-                options={[1, 2, 3, 4, 5, 7, 10].map((n) => ({
-                  label: `${n} marta`,
-                  value: n,
-                }))}
-              />
-
-              <SelectBlock
-                label="Speed"
-                value={playbackRate}
-                onChange={(v) => setPlaybackRate(Number(v))}
-                options={[
-                  { label: "0.75x", value: 0.75 },
-                  { label: "1x", value: 1 },
-                  { label: "1.25x", value: 1.25 },
-                  { label: "1.5x", value: 1.5 },
-                ]}
-              />
-
-              <SelectBlock
-                label="Speech lang"
-                value={speechLang}
-                onChange={setSpeechLang}
-                options={[
-                  { label: "Arabic (ar-SA)", value: "ar-SA" },
-                  { label: "English (en-US)", value: "en-US" },
-                ]}
-              />
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <SelectBlock
-                label="Practice target"
-                value={practiceMode}
-                onChange={setPracticeMode}
-                options={[
-                  { label: "Arabic", value: "arabic" },
-                  { label: "Translit", value: "translit" },
-                ]}
-              />
-
-              <SelectBlock
-                label="View mode"
-                value={viewMode}
-                onChange={setViewMode}
-                options={[
-                  { label: "All", value: "all" },
-                  { label: "Practice", value: "practice" },
-                  { label: "Exam", value: "exam" },
-                ]}
-              />
-
-              <SelectBlock
-                label="Shadow delay"
-                value={shadowDelay}
-                onChange={(v) => setShadowDelay(Number(v))}
-                options={[
-                  { label: "0.8 sec", value: 800 },
-                  { label: "1.2 sec", value: 1200 },
-                  { label: "1.8 sec", value: 1800 },
-                  { label: "2.5 sec", value: 2500 },
-                ]}
-              />
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
-                <span>Audio progress</span>
-                <span>
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-              AI practice / talaffuz tekshiruv
-            </p>
-
-            <div className="mt-3 grid gap-3">
-              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold text-slate-200">
-                    Mikrofon holati
-                  </span>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      isRecording
-                        ? "bg-red-500/20 text-red-300"
-                        : "bg-slate-800 text-slate-300"
-                    }`}
-                  >
-                    {isRecording ? "Recording..." : "Idle"}
-                  </span>
-                </div>
-
-                <div className="mt-3">
-                  <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
-                    <span>Mic level</span>
-                    <span>{micLevel}%</span>
-                  </div>
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-fuchsia-400 via-pink-400 to-red-400 transition-all"
-                      style={{ width: `${micLevel}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-3 text-xs leading-6 text-slate-400">
-                  Speech status:{" "}
-                  <span className="font-semibold text-slate-200">
-                    {speechStatus}
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Aniqlangan matn
-                </p>
-                <p className="min-h-[56px] text-sm leading-7 text-slate-200">
-                  {speechResult || speechInterim || "Hali matn aniqlanmadi."}
-                </p>
-              </div>
-
-              {recordings[selectedVerse]?.url && (
-                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-slate-200">
-                      Sizning yozilgan audiongiz
-                    </p>
-                    <button
-                      onClick={() => clearRecording(selectedVerse)}
-                      className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300"
-                    >
-                      O‘chirish
-                    </button>
-                  </div>
-                  <audio
-                    controls
-                    className="w-full"
-                    src={recordings[selectedVerse].url}
-                  />
-                </div>
-              )}
-
-              {feedback && (
-                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                        Natija
-                      </p>
-                      <h3
-                        className={`mt-1 text-2xl font-black ${feedbackColor}`}
-                      >
-                        {feedback.score}% • {feedback.level}
-                      </h3>
-                    </div>
-                    <div className="rounded-2xl bg-white/5 px-4 py-3 text-right">
-                      <p className="text-xs text-slate-500">Target</p>
-                      <p className="text-sm font-semibold text-slate-200">
-                        {practiceMode === "arabic"
-                          ? "Arabcha oyat"
-                          : "O‘qilishi"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-3">
-                    <MiniBlock
-                      title="Tushib qolgan so‘zlar"
-                      value={
-                        feedback.missing.length
-                          ? feedback.missing.join(", ")
-                          : "Yo‘q"
-                      }
-                    />
-                    <MiniBlock
-                      title="Ortiqcha / noto‘g‘ri so‘zlar"
-                      value={
-                        feedback.extra.length
-                          ? feedback.extra.join(", ")
-                          : "Yo‘q"
-                      }
-                    />
-                    <MiniBlock
-                      title="Mos kelgan so‘zlar"
-                      value={
-                        feedback.matched.length
-                          ? feedback.matched.join(", ")
-                          : "Hali aniqlanmadi"
-                      }
-                    />
-                  </div>
-
-                  <div className="mt-4 rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4">
-                    <p className="mb-2 text-sm font-bold text-emerald-300">
-                      Mashq tavsiyalari
-                    </p>
-                    <ul className="space-y-2 text-sm leading-7 text-slate-300">
-                      {feedback.tips.map((tip, i) => (
-                        <li key={i}>• {tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {bookmarks.length > 0 && (
-          <div className="mt-6 rounded-[26px] border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-lg font-bold text-white">
-                Bookmark qilingan oyatlar
-              </h3>
+            <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => setBookmarks([])}
-                className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300"
+                onClick={fetchAllData}
+                className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
               >
-                Tozalash
+                {loading ? "Yangilanmoqda..." : "Refresh"}
               </button>
             </div>
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              {bookmarks.map((num) => (
-                <button
-                  key={num}
-                  onClick={() => jumpToBookmark(num)}
-                  className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200"
-                >
-                  {num}-oyat
-                </button>
-              ))}
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-500">Brands</p>
+              <h3 className="mt-2 text-2xl font-bold">{brands.length}</h3>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-500">Categories</p>
+              <h3 className="mt-2 text-2xl font-bold">{categories.length}</h3>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-500">Products</p>
+              <h3 className="mt-2 text-2xl font-bold">{products.length}</h3>
+            </div>
+          </div>
+
+          {(message || error) && (
+            <div className="mt-6">
+              {message && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {message}
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* TABS */}
+        <div className="mb-8 flex flex-wrap gap-3">
+          <button
+            onClick={() => setActiveTab("brands")}
+            className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "brands"
+                ? "bg-slate-900 text-white"
+                : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            Brands
+          </button>
+
+          <button
+            onClick={() => setActiveTab("categories")}
+            className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "categories"
+                ? "bg-slate-900 text-white"
+                : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            Categories
+          </button>
+
+          <button
+            onClick={() => setActiveTab("products")}
+            className={`rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+              activeTab === "products"
+                ? "bg-slate-900 text-white"
+                : "bg-white text-slate-700 shadow-sm"
+            }`}
+          >
+            Products
+          </button>
+        </div>
+
+        {/* BRANDS */}
+        {activeTab === "brands" && (
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-2">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">
+                    {editingBrandId ? "Brand Edit" : "Yangi Brand"}
+                  </h2>
+                  {editingBrandId && (
+                    <button
+                      onClick={resetBrandForm}
+                      className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+
+                <form onSubmit={submitBrand} className="space-y-4">
+                  <Input
+                    label="Brand name"
+                    name="name"
+                    value={brandForm.name}
+                    onChange={handleBrandNameAutoSlug}
+                    placeholder="Apple"
+                  />
+
+                  <Input
+                    label="Slug"
+                    name="slug"
+                    value={brandForm.slug}
+                    onChange={handleBrandChange}
+                    placeholder="apple"
+                  />
+
+                  <Input
+                    label="Image URL"
+                    name="image_url"
+                    value={brandForm.image_url}
+                    onChange={handleBrandChange}
+                    placeholder="https://..."
+                  />
+
+                  <Textarea
+                    label="Description"
+                    name="description"
+                    value={brandForm.description}
+                    onChange={handleBrandChange}
+                    placeholder="Brand haqida qisqacha..."
+                  />
+
+                  <Checkbox
+                    label="Active"
+                    name="is_active"
+                    checked={brandForm.is_active}
+                    onChange={handleBrandChange}
+                  />
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white hover:opacity-90"
+                  >
+                    {editingBrandId ? "Brand Update" : "Brand Add"}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <h2 className="mb-5 text-xl font-bold">Brandlar ro‘yxati</h2>
+
+                <div className="space-y-4">
+                  {brands.length === 0 ? (
+                    <EmptyState text="Hozircha brand yo‘q" />
+                  ) : (
+                    brands.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-2xl border border-slate-200 p-4"
+                      >
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-bold">{item.name}</h3>
+                              <Badge
+                                text={item.is_active ? "Active" : "Inactive"}
+                                active={item.is_active}
+                              />
+                            </div>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                              Slug: {item.slug}
+                            </p>
+
+                            {item.description && (
+                              <p className="mt-2 text-sm text-slate-600">
+                                {item.description}
+                              </p>
+                            )}
+
+                            {item.image_url && (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="mt-4 h-24 w-24 rounded-2xl object-cover"
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <ActionButton
+                              text="Edit"
+                              onClick={() => editBrand(item)}
+                              variant="edit"
+                            />
+                            <ActionButton
+                              text="Delete"
+                              onClick={() => deleteBrand(item.id)}
+                              variant="delete"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="mt-6 grid gap-4">
-          {filteredVerses.map((item) => {
-            const isActive = item.number === selectedVerse;
-            const isBookmarked = bookmarks.includes(item.number);
+        {/* CATEGORIES */}
+        {activeTab === "categories" && (
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-2">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">
+                    {editingCategoryId ? "Category Edit" : "Yangi Category"}
+                  </h2>
+                  {editingCategoryId && (
+                    <button
+                      onClick={resetCategoryForm}
+                      className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
 
-            return (
-              <div
-                key={item.number}
-                ref={(el) => (verseRefs.current[item.number] = el)}
-                className={`rounded-[26px] border p-4 transition-all sm:p-5 ${
-                  isActive
-                    ? "border-emerald-400/30 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-blue-500/10"
-                    : "border-white/10 bg-white/5"
-                } shadow-xl backdrop-blur`}
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${
-                          isActive
-                            ? "bg-emerald-400 text-slate-950"
-                            : "bg-white/10 text-slate-200"
-                        }`}
-                      >
-                        {item.number}-oyat
-                      </span>
-                      {isActive && (
-                        <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">
-                          Hozirgi oyat
-                        </span>
-                      )}
-                      {isBookmarked && (
-                        <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">
-                          Bookmark
-                        </span>
-                      )}
-                    </div>
+                <form onSubmit={submitCategory} className="space-y-4">
+                  <Input
+                    label="Category name"
+                    name="name"
+                    value={categoryForm.name}
+                    onChange={handleCategoryNameAutoSlug}
+                    placeholder="Smartfonlar"
+                  />
 
-                    {!getExamHidden("arabic") ? (
-                      <p
-                        dir="rtl"
-                        className={`text-right text-white ${
-                          compactMode
-                            ? "text-2xl leading-[2.05]"
-                            : "text-3xl leading-[2.15]"
-                        }`}
+                  <Input
+                    label="Slug"
+                    name="slug"
+                    value={categoryForm.slug}
+                    onChange={handleCategoryChange}
+                    placeholder="smartfonlar"
+                  />
+
+                  <Input
+                    label="Image URL"
+                    name="image_url"
+                    value={categoryForm.image_url}
+                    onChange={handleCategoryChange}
+                    placeholder="https://..."
+                  />
+
+                  <Textarea
+                    label="Description"
+                    name="description"
+                    value={categoryForm.description}
+                    onChange={handleCategoryChange}
+                    placeholder="Category haqida qisqacha..."
+                  />
+
+                  <Checkbox
+                    label="Active"
+                    name="is_active"
+                    checked={categoryForm.is_active}
+                    onChange={handleCategoryChange}
+                  />
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white hover:opacity-90"
+                  >
+                    {editingCategoryId ? "Category Update" : "Category Add"}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <h2 className="mb-5 text-xl font-bold">Categorylar ro‘yxati</h2>
+
+                <div className="space-y-4">
+                  {categories.length === 0 ? (
+                    <EmptyState text="Hozircha category yo‘q" />
+                  ) : (
+                    categories.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-2xl border border-slate-200 p-4"
                       >
-                        {item.arabic}
-                      </p>
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-500">
-                        Exam mode yoqilgan
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-bold">{item.name}</h3>
+                              <Badge
+                                text={item.is_active ? "Active" : "Inactive"}
+                                active={item.is_active}
+                              />
+                            </div>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                              Slug: {item.slug}
+                            </p>
+
+                            {item.description && (
+                              <p className="mt-2 text-sm text-slate-600">
+                                {item.description}
+                              </p>
+                            )}
+
+                            {item.image_url && (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="mt-4 h-24 w-24 rounded-2xl object-cover"
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <ActionButton
+                              text="Edit"
+                              onClick={() => editCategory(item)}
+                              variant="edit"
+                            />
+                            <ActionButton
+                              text="Delete"
+                              onClick={() => deleteCategory(item.id)}
+                              variant="delete"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    )}
-
-                    {showTranslit &&
-                      !getExamHidden("translit") &&
-                      viewMode !== "practice" && (
-                        <div className="mt-4">
-                          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                            O‘qilishi
-                          </p>
-                          <p className="text-sm leading-7 text-slate-300 sm:text-base">
-                            {item.translit}
-                          </p>
-                        </div>
-                      )}
-
-                    {showMeaning &&
-                      !getExamHidden("meaning") &&
-                      viewMode === "all" && (
-                        <div className="mt-4">
-                          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                            Ma’nosi
-                          </p>
-                          <p className="text-sm leading-7 text-slate-400 sm:text-base">
-                            {item.meaning}
-                          </p>
-                        </div>
-                      )}
-                  </div>
-
-                  <div className="grid shrink-0 grid-cols-2 gap-2 sm:w-64">
-                    <SmallButton
-                      onClick={() => playVerse(item.number)}
-                      variant="primary"
-                    >
-                      {loadingVerse === item.number ? "..." : "Play"}
-                    </SmallButton>
-                    <SmallButton onClick={() => setSelectedVerse(item.number)}>
-                      Tanlash
-                    </SmallButton>
-                    <SmallButton onClick={() => toggleBookmark(item.number)}>
-                      {isBookmarked ? "Unsave" : "Save"}
-                    </SmallButton>
-                    <a
-                      href={getAudioUrl(item.number)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-white"
-                    >
-                      Audio
-                    </a>
-                  </div>
+                    ))
+                  )}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                Bottom player
-              </p>
-              <p className="truncate text-sm font-bold text-white sm:text-base">
-                {selectedVerse}-oyat • {currentVerseData?.translit}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <SmallIconButton onClick={prevVerse}>←</SmallIconButton>
-
-              {isPlaying ? (
-                <SmallIconButton onClick={pauseAudio}>Pause</SmallIconButton>
-              ) : (
-                <SmallIconButton onClick={() => playVerse(selectedVerse)}>
-                  Play
-                </SmallIconButton>
-              )}
-
-              <SmallIconButton onClick={nextVerse}>→</SmallIconButton>
-
-              {!isRecording ? (
-                <SmallIconButton onClick={startRecording}>🎙</SmallIconButton>
-              ) : (
-                <SmallIconButton onClick={stopRecording}>⏹</SmallIconButton>
-              )}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* PRODUCTS */}
+        {activeTab === "products" && (
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-2">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">
+                    {editingProductId ? "Product Edit" : "Yangi Product"}
+                  </h2>
+                  {editingProductId && (
+                    <button
+                      onClick={resetProductForm}
+                      className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+
+                <form onSubmit={submitProduct} className="space-y-4">
+                  <Input
+                    label="Product name"
+                    name="name"
+                    value={productForm.name}
+                    onChange={handleProductNameAutoSlug}
+                    placeholder="iPhone 15 Pro"
+                  />
+
+                  <Input
+                    label="Slug"
+                    name="slug"
+                    value={productForm.slug}
+                    onChange={handleProductChange}
+                    placeholder="iphone-15-pro"
+                  />
+
+                  <Textarea
+                    label="Description"
+                    name="description"
+                    value={productForm.description}
+                    onChange={handleProductChange}
+                    placeholder="Mahsulot haqida..."
+                  />
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <Input
+                      label="Price"
+                      name="price"
+                      type="number"
+                      value={productForm.price}
+                      onChange={handleProductChange}
+                      placeholder="14500000"
+                    />
+
+                    <Input
+                      label="Old price"
+                      name="old_price"
+                      type="number"
+                      value={productForm.old_price}
+                      onChange={handleProductChange}
+                      placeholder="15200000"
+                    />
+                  </div>
+
+                  <Input
+                    label="Stock"
+                    name="stock"
+                    type="number"
+                    value={productForm.stock}
+                    onChange={handleProductChange}
+                    placeholder="12"
+                  />
+
+                  <Input
+                    label="Image URL"
+                    name="image_url"
+                    value={productForm.image_url}
+                    onChange={handleProductChange}
+                    placeholder="https://..."
+                  />
+
+                  <Select
+                    label="Brand"
+                    name="brand_id"
+                    value={productForm.brand_id}
+                    onChange={handleProductChange}
+                    options={brands.map((item) => ({
+                      value: item.id,
+                      label: item.name,
+                    }))}
+                    placeholder="Brand tanlang"
+                  />
+
+                  <Select
+                    label="Category"
+                    name="category_id"
+                    value={productForm.category_id}
+                    onChange={handleProductChange}
+                    options={categories.map((item) => ({
+                      value: item.id,
+                      label: item.name,
+                    }))}
+                    placeholder="Category tanlang"
+                  />
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <Checkbox
+                      label="Active"
+                      name="is_active"
+                      checked={productForm.is_active}
+                      onChange={handleProductChange}
+                    />
+
+                    <Checkbox
+                      label="Featured"
+                      name="is_featured"
+                      checked={productForm.is_featured}
+                      onChange={handleProductChange}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white hover:opacity-90"
+                  >
+                    {editingProductId ? "Product Update" : "Product Add"}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <h2 className="mb-5 text-xl font-bold">Productlar ro‘yxati</h2>
+
+                <div className="space-y-4">
+                  {products.length === 0 ? (
+                    <EmptyState text="Hozircha product yo‘q" />
+                  ) : (
+                    products.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-2xl border border-slate-200 p-4"
+                      >
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-bold">{item.name}</h3>
+
+                              <Badge
+                                text={item.is_active ? "Active" : "Inactive"}
+                                active={item.is_active}
+                              />
+
+                              {item.is_featured && (
+                                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                  Featured
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                              Slug: {item.slug}
+                            </p>
+
+                            <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-600 md:grid-cols-2">
+                              <p>
+                                <span className="font-semibold">Brand:</span>{" "}
+                                {getBrandName(item.brand_id)}
+                              </p>
+                              <p>
+                                <span className="font-semibold">Category:</span>{" "}
+                                {getCategoryName(item.category_id)}
+                              </p>
+                              <p>
+                                <span className="font-semibold">Price:</span>{" "}
+                                {item.price}
+                              </p>
+                              <p>
+                                <span className="font-semibold">
+                                  Old price:
+                                </span>{" "}
+                                {item.old_price ?? "-"}
+                              </p>
+                              <p>
+                                <span className="font-semibold">Stock:</span>{" "}
+                                {item.stock}
+                              </p>
+                            </div>
+
+                            {item.description && (
+                              <p className="mt-3 text-sm text-slate-600">
+                                {item.description}
+                              </p>
+                            )}
+
+                            {item.image_url && (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="mt-4 h-28 w-28 rounded-2xl object-cover"
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex gap-2">
+                            <ActionButton
+                              text="Edit"
+                              onClick={() => editProduct(item)}
+                              variant="edit"
+                            />
+                            <ActionButton
+                              text="Delete"
+                              onClick={() => deleteProduct(item.id)}
+                              variant="delete"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function Pill({ children }) {
+// ==============================
+// REUSABLE UI
+// ==============================
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder = "",
+  type = "text",
+}) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
-      {children}
-    </span>
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        {label}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-400"
+      />
+    </div>
   );
 }
 
-function ActionButton({ children, onClick, variant = "default" }) {
-  const styles = {
-    primary:
-      "bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 font-black hover:scale-[1.01]",
-    secondary: "bg-white/5 text-white border border-white/10 hover:bg-white/10",
-    danger:
-      "bg-red-500/15 text-red-300 border border-red-500/20 hover:bg-red-500/20",
-    default: "bg-white/5 text-white border border-white/10 hover:bg-white/10",
-  };
-
+function Textarea({ label, name, value, onChange, placeholder = "" }) {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-2xl px-4 py-3 text-sm transition ${styles[variant] || styles.default}`}
-    >
-      {children}
-    </button>
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
+        {label}
+      </label>
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows="4"
+        className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-400"
+      />
+    </div>
   );
 }
 
-function SmallButton({ children, onClick, variant = "default" }) {
-  const cls =
-    variant === "primary"
-      ? "bg-emerald-400 text-slate-950 font-black"
-      : "bg-white/5 border border-white/10 text-white";
+function Checkbox({ label, name, checked, onChange }) {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-2xl px-4 py-3 text-sm ${cls}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function SmallIconButton({ children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-    >
-      {children}
-    </button>
-  );
-}
-
-function ToggleCard({ label, checked, onChange }) {
-  return (
-    <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
+    <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
       <input
         type="checkbox"
+        name={name}
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-emerald-400"
+        onChange={onChange}
+        className="h-4 w-4"
       />
-      {label}
+      <span className="text-sm font-medium text-slate-700">{label}</span>
     </label>
   );
 }
 
-function SelectBlock({ label, value, onChange, options }) {
+function Select({
+  label,
+  name,
+  value,
+  onChange,
+  options = [],
+  placeholder = "Tanlang",
+}) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label}
       </label>
       <select
+        name={name}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none"
+        onChange={onChange}
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-400"
       >
-        {options.map((opt) => (
-          <option key={String(opt.value)} value={opt.value}>
-            {opt.label}
+        <option value="">{placeholder}</option>
+        {options.map((item) => (
+          <option key={item.value} value={item.value}>
+            {item.label}
           </option>
         ))}
       </select>
@@ -1566,13 +1254,40 @@ function SelectBlock({ label, value, onChange, options }) {
   );
 }
 
-function MiniBlock({ title, value }) {
+function Badge({ text, active }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-        {title}
-      </p>
-      <p className="text-sm leading-7 text-slate-200">{value}</p>
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+        active
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-slate-200 text-slate-700"
+      }`}
+    >
+      {text}
+    </span>
+  );
+}
+
+function ActionButton({ text, onClick, variant = "edit" }) {
+  const classes =
+    variant === "delete"
+      ? "bg-red-50 text-red-600 hover:bg-red-100"
+      : "bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${classes}`}
+    >
+      {text}
+    </button>
+  );
+}
+
+function EmptyState({ text }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
+      {text}
     </div>
   );
 }
